@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>祝福你</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "KaiTi", "楷体", serif;
+            text-align: center;
+        }
+        
+        body {
+            background-color: #f0f8ff;
+            padding: 50px;
+        }
+        
+        h1 {
+            color: #e91e63;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        button {
+            background-color: #e91e63;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 1;
+        }
+        
+        .popup {
+            position: fixed;
+            width: 220px;
+            height: 100px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            animation: pop 0.3s ease-out forwards;
+            z-index: 1000;
+        }
+        
+        @keyframes pop {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            background: none;
+            color: inherit;
+            font-size: 16px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .close-btn:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            transform: none;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>点击开始接收祝福吧！</h1>
+    <div class="btn-container">
+        <button id="startBtn">开启祝福</button>
+        <button id="closeAllBtn">关闭所有</button>
+    </div>
+
+    <script>
+        // 普通祝福列表
+        const blessings = [
+            "降温了，多穿点～", "记得喝温水～", "累了就歇会儿～", "晚餐吃热的～", 
+            "别熬夜，早睡～", "不开心找我聊～", "出门注意安全～", "记得涂护手霜～", 
+            "久坐起身活动～", "别委屈自己～", "今天也要开心～", "下雨记得带伞～", 
+            "饿了就吃点～", "别给自己施压～", "累了听听歌～", "吃水果补维C～", 
+            "走路别玩手机～", "冷了揣揣手～", "不舒服及时说～", "你今天超棒～", 
+            "早餐要吃好～", "天热别中暑～", "风大戴口罩～", "睡前泡泡脚～", 
+            "别忘带钥匙～", "口渴及时喝～", "累了靠会儿～", "别硬撑呀～", 
+            "开心多笑笑～", "阴天也有光～", "出汗换件衣～", "别憋尿哦～", 
+            "多吃蔬菜呀～", "别总看屏幕～", "累了睡会儿～", "你值得被爱～", 
+            "雨天路滑慢走～", "记得带纸巾～", "别吃太凉的～", "加油，你可以～", 
+            "困了眯一会儿～", "天冷多喝热汤～", "别忘涂唇膏～", "压力别憋着～", 
+            "今天也辛苦啦～", "别挑食呀～", "走路看脚下～", "累了伸伸腰～", 
+            "别熬夜刷手机～", "你超厉害的～", "天热多喝水～", "记得带充电宝～", 
+            "别冻着脚～", "不开心别闷着～", "吃点甜的开心～", "别总熬夜呀～", 
+            "出门看天气～", "累了歇一歇～", "别委屈胃～", "你很棒的～", 
+            "天凉加件衣～", "记得吃午饭～", "别太劳累～", "不开心找我～", 
+            "吃点热乎的～", "别熬夜啦～", "出门带好伞～", "累了别硬扛～", 
+            "别对自己严～", "今天也很好～", "下雨别淋着～", "饿了及时吃～", 
+            "别给自己累～", "累了听首歌～", "吃水果呀～", "走路别跑～", 
+            "冷了多穿～", "不舒服看医生～", "你超优秀～", "早餐别不吃～", 
+            "天热别晒着～", "风大戴帽子～", "睡前别玩手机～", "别忘带钱包～", 
+            "口渴别忍着～", "累了靠沙发～", "别撑着～", "开心就好～", 
+            "阴天别难过～", "出汗擦一擦～", "别憋尿～", "多吃菜～", 
+            "别总看手机～", "累了睡～", "你值得～"
+        ];
+        
+        // 背景颜色列表
+        const bgColors = [
+            "#ffc0cb", "#ffb6c1", "#ff69b4", "#ff1493", "#db7093", "#bc8f8f", 
+            "#c71585", "#ffa07a", "#ff7f50", "#ffa500", "#ffffe0", "#e6e6fa", 
+            "#d8bfd8", "#dda0dd", "#ee82ee"
+        ];
+        
+        const startBtn = document.getElementById("startBtn");
+        const closeAllBtn = document.getElementById("closeAllBtn");
+        let hasSpecialBlessing = false; // 跟踪是否已显示特殊祝福
+        
+        // 开启祝福按钮点击事件
+        startBtn.addEventListener("click", () => {
+            // 禁用按钮
+            startBtn.disabled = true;
+            
+            // 5秒后恢复按钮可用
+            setTimeout(() => {
+                startBtn.disabled = false;
+            }, 5000);
+            
+            // 重置特殊祝福状态
+            hasSpecialBlessing = false;
+            
+            // 生成100个弹窗，间隔50ms
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    createPopup();
+                }, i * 50);
+            }
+        });
+        
+        // 关闭所有按钮点击事件
+        closeAllBtn.addEventListener("click", () => {
+            // 清除所有弹窗
+            const popups = document.querySelectorAll(".popup");
+            popups.forEach(popup => popup.remove());
+            
+            // 重置特殊祝福状态
+            hasSpecialBlessing = false;
+            
+            // 恢复开启祝福按钮可用
+            startBtn.disabled = false;
+        });
+        
+        // 创建弹窗函数
+        function createPopup() {
+            // 创建弹窗元素
+            const popup = document.createElement("div");
+            popup.className = "popup";
+            
+            // 随机选择背景颜色
+            const randomColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+            popup.style.backgroundColor = randomColor;
+            
+            // 确定弹窗内容（10%概率显示特殊祝福，且只显示一次）
+            let content;
+            if (!hasSpecialBlessing && Math.random() < 0.1) {
+                content = "心平能愈三千疾！";
+                hasSpecialBlessing = true;
+            } else {
+                content = blessings[Math.floor(Math.random() * blessings.length)];
+            }
+            
+            // 设置弹窗内容
+            popup.innerHTML = `
+                ${content}
+                <button class="close-btn">×</button>
+            `;
+            
+            // 添加到页面
+            document.body.appendChild(popup);
+            
+            // 随机位置（确保弹窗不超出屏幕）
+            const maxLeft = window.innerWidth - popup.offsetWidth;
+            const maxTop = window.innerHeight - popup.offsetHeight;
+            const left = Math.floor(Math.random() * maxLeft);
+            const top = Math.floor(Math.random() * maxTop);
+            
+            popup.style.left = `${left}px`;
+            popup.style.top = `${top}px`;
+            
+            // 关闭按钮事件
+            const closeBtn = popup.querySelector(".close-btn");
+            closeBtn.addEventListener("click", () => {
+                popup.remove();
+            });
+        }
+    </script>
+</body>
+</html>
